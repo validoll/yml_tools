@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @file
+ * Administration page callbacks for the YML Tools module.
+ */
+
+/**
+ * Administration page callback.
+ */
 function yml_tools_admin_settings() {
   $form = array();
   $currency_config_url = '';
@@ -7,24 +15,29 @@ function yml_tools_admin_settings() {
   $store = ymlStore::createStore();
 
   $store_type = $store->getType();
-  switch($store_type) {
-  	case YML_STORE_TYPE_UBERCART:
+  switch ($store_type) {
+    case YML_STORE_TYPE_UBERCART:
       $ctypes = uc_product_types();
-      $ctype_first = $ctypes[0]; // we use first ctype to get available fields for now.
+      // We use first ctype to get available fields for now.
+      $ctype_first = $ctypes[0];
       $ctypes = array_combine($ctypes, $ctypes);
 
       $currency_config_url = 'admin/store/settings/store/edit/format';
-  	  break;
-  	case YML_STORE_TYPE_COMMERCE:
+      break;
+
+    case YML_STORE_TYPE_COMMERCE:
       $ctypes = commerce_product_types();
       $ctypes = array_keys($ctypes);
-      $ctype_first = $ctypes[0]; // we use first ctype to get available fields for now.
+      // We use first ctype to get available fields for now.
+      $ctype_first = $ctypes[0];
       $ctypes = array_combine($ctypes, $ctypes);
 
       $currency_config_url = 'admin/commerce/config/currency';
-  	  break;
-  	default:
-  	  break;
+      break;
+
+    default:
+      break;
+
   }
 
   $form['yml_tools_types'] = array(
@@ -54,13 +67,15 @@ function yml_tools_admin_settings() {
 
   if (count($term_fields) == 0) {
     drupal_set_message(t("No term fields attached to product node! Export can't work properly. Please create at least one taxonomy vocabulary and use it for your products."), 'warning');
-  } else {
+  }
+  else {
     $term_fields = array_combine($term_fields, $term_fields);
   }
 
   if (count($descr_fields) == 0) {
     drupal_set_message(t("No text fields attached to product node! Export can't work properly. Please create at least one text field and use it for your products."), 'warning');
-  } else {
+  }
+  else {
     $descr_fields = array_combine($descr_fields, $descr_fields);
   }
 
@@ -116,7 +131,7 @@ function yml_tools_admin_settings() {
 
   $form['yml_tools_image_field'] = array(
     '#type' => 'value',
-    '#value' => variable_get('uc_image_' . $ctype_first, 'uc_product_image')
+    '#value' => variable_get('uc_image_' . $ctype_first, 'uc_product_image'),
   );
 
   $form['#submit'][] = 'yml_tools_admin_settings_submit';
@@ -124,6 +139,9 @@ function yml_tools_admin_settings() {
   return system_settings_form($form);
 }
 
+/**
+ * Processes ml_tools_admin_settings form.
+ */
 function yml_tools_admin_settings_submit($form, $form_state) {
   $term_field = $form_state['values']['yml_tools_term_field'];
   $term_field  = field_info_field($term_field);

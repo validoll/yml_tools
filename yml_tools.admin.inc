@@ -2,6 +2,7 @@
 
 function yml_tools_admin_settings() {
   $form = array();
+  $currency_config_url = '';
 
   $store = ymlStore::createStore();
 
@@ -10,14 +11,17 @@ function yml_tools_admin_settings() {
   	case YML_STORE_TYPE_UBERCART:
       $ctypes = uc_product_types();
       $ctype_first = $ctypes[0]; // we use first ctype to get available fields for now.
-      //$ctypes = array_combine($ctypes, $ctypes);
+      $ctypes = array_combine($ctypes, $ctypes);
 
+      $currency_config_url = 'admin/store/settings/store/edit/format';
   	  break;
   	case YML_STORE_TYPE_COMMERCE:
       $ctypes = commerce_product_types();
       $ctypes = array_keys($ctypes);
       $ctype_first = $ctypes[0]; // we use first ctype to get available fields for now.
       $ctypes = array_combine($ctypes, $ctypes);
+
+      $currency_config_url = 'admin/commerce/config/currency';
   	  break;
   	default:
   	  break;
@@ -91,7 +95,7 @@ function yml_tools_admin_settings() {
   $form['yml_tools_currency'] = array(
     '#type' => 'item',
     '#title' => t('Ubercart currency'),
-    '#markup' => $store->getCurrency() . ' (' . l(t("Change"), 'admin/store/settings/store/edit/format') . ')',
+    '#markup' => $store->getCurrency() . ' (' . l(t("Change"), $currency_config_url) . ')',
     '#description' => t("Should be 'RUR' for Russia"),
   );
 

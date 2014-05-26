@@ -12,12 +12,12 @@ function yml_tools_admin_settings() {
   $form = array();
   $currency_config_url = '';
 
-  $stroreCreator = new YmlStore();
-  $store = $stroreCreator->createStore();
+  $strore_creator = new YmlStore();
+  $store = $strore_creator->createStore();
 
   $store_type = $store->getType();
   switch ($store_type) {
-    case YML_STORE_TYPE_UBERCART:
+    case YML_TOOLS_STORE_TYPE_UBERCART:
       $ctypes = uc_product_types();
       // We use first ctype to get available fields for now.
       $ctype_first = $ctypes[0];
@@ -26,7 +26,7 @@ function yml_tools_admin_settings() {
       $currency_config_url = 'admin/store/settings/store/edit/format';
       break;
 
-    case YML_STORE_TYPE_COMMERCE:
+    case YML_TOOLS_STORE_TYPE_COMMERCE:
       $ctypes = commerce_product_types();
       $ctypes = array_keys($ctypes);
       // We use first ctype to get available fields for now.

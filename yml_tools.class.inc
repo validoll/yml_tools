@@ -203,7 +203,7 @@ class YmlUbercartStore extends YmlStoreType implements YmlStoreTypeInterface {
    * Implements class constructor.
    */
   public function __construct() {
-    $this->type = YML_STORE_TYPE_UBERCART;
+    $this->type = YML_TOOLS_STORE_TYPE_UBERCART;
   }
 
   /**
@@ -248,7 +248,7 @@ class YmlCommerceStore extends ymlStoreType implements YmlStoreTypeInterface  {
    * Implements class constructor.
    */
   public function __construct() {
-    $this->type = YML_STORE_TYPE_COMMERCE;
+    $this->type = YML_TOOLS_STORE_TYPE_COMMERCE;
   }
 
   /**

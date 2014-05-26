@@ -31,7 +31,8 @@ function yml_tools_menu() {
 }
 
 function yml_tools_get_xml() {
-  $store = ymlStore::createStore();
+  $stroreCreator = new YmlStore();
+  $store = $stroreCreator->createStore();
   $store->getXML();
 }
 

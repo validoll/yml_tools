@@ -1,29 +1,54 @@
 <?php
+/**
+ * @file
+ * The code processing products and etc in the YML Tools module.
+ */
 
-interface ymlStoreTypeInterface {
+interface YmlStoreTypeInterface {
   /**
-   * Get store curency
+   * Get store curency.
    */
   public function getCurrency();
 
+  /**
+   * Get price for single product.
+   *
+   * @param object $product
+   *   Product node.
+   *
+   * @return float
+   *   Product price
+   */
   public function getProductPrice($product);
 
+  /**
+   * Get SKU for single product.
+   *
+   * @param object $product
+   *   Product node
+   *
+   * @return string
+   *   Product SKU
+   */
   public function getProductSKU($product);
 }
 
 /**
  * Abstract class for store type
  */
-abstract class ymlStoreType {
+abstract class YmlStoreType {
   protected $type;
 
   /**
-   * Return store type
+   * Return store type.
    */
   public function getType() {
     return $this->type;
   }
 
+  /**
+   * Return node type for export.
+   */
   public function getNodeTypes() {
     $types = array();
     $types_tmp = variable_get('yml_tools_types', array('product' => 'product'));
@@ -36,7 +61,7 @@ abstract class ymlStoreType {
   }
 
   /**
-   * Get store categories
+   * Get store categories.
    */
   public function getCategories() {
     $categories = taxonomy_get_tree(variable_get('yml_tools_vid', ''));
@@ -44,7 +69,7 @@ abstract class ymlStoreType {
   }
 
   /**
-   * Get store products
+   * Get store products.
    */
   public function getProducts() {
     $term_field = variable_get('yml_tools_term_field', '');
@@ -69,59 +94,59 @@ abstract class ymlStoreType {
         $nids = array_keys($result['node']);
         $tmp_nodes = node_load_multiple($nids);
       }
-      $nodes = array_merge($nodes, (array)$tmp_nodes);
+      $nodes = array_merge($nodes, (array) $tmp_nodes);
     }
 
-  	foreach ($nodes as $id => $node){
-  	  $validate_price = (int)$this->getProductPrice($node);
+    foreach ($nodes as $id => $node) {
+      $validate_price = (int) $this->getProductPrice($node);
       if (empty($validate_price)) {
-        //continue;
+        continue;
       }
 
       $term = field_get_items('node', $node, $term_field);
-    	if (isset($term[0])) {
-    	 $term = $term[0];
-    	}
+      if (isset($term[0])) {
+        $term = $term[0];
+      }
 
-    	$description = field_get_items('node', $node, $descr_field);
-    	if (isset($description[0])) {
-    	 $description = check_plain(strip_tags($description[0]['value']));
-    	}
+      $description = field_get_items('node', $node, $descr_field);
+      if (isset($description[0])) {
+        $description = check_plain(strip_tags($description[0]['value']));
+      }
 
-    	$image = field_get_items('node', $node, $image_field);
-    	if (isset($image[0])) {
-    	 $image = file_create_url($image[0]['uri']);
-    	}
+      $image = field_get_items('node', $node, $image_field);
+      if (isset($image[0])) {
+        $image = file_create_url($image[0]['uri']);
+      }
       $title = check_plain($node->title);
-      $url = url('node/' . $node -> nid, array('absolute' => TRUE));
+      $url = url('node/' . $node->nid, array('absolute' => TRUE));
       $price = $this->getProductPrice($node);
       $model = $this->getProductSKU($node);
 
-    	$products[$id] = (object)array(
-    	  'title' => $title,
-    	  'url' => $url,
+      $products[$id] = (object) array(
+        'title' => $title,
+        'url' => $url,
         'category' => $term['tid'],
         'price' => $price,
         'description' => $description,
         'image' => $image,
-    	  'model' => $model,
-    	);
-  	}
+        'model' => $model,
+      );
+    }
     return $products;
   }
 
   /**
-   * Generate XML
+   * Generate XML.
    */
   public function getXML() {
     $products_objects = $this->getProducts();
     $categories_objects = $this->getCategories();
 
-    // Generate XML for each category and product from templates
+    // Generate XML for each category and product from templates.
     $categories = '';
     foreach ($categories_objects as $category) {
       $category->name = check_plain($category->name);
-      // Set the first parent category as the primary parent
+      // Set the first parent category as the primary parent.
       if (!empty($category->parents[0])) {
         $category->parent = $category->parents[0];
       }
@@ -137,7 +162,7 @@ abstract class ymlStoreType {
       ));
     }
 
-    // Return XML
+    // Return XML.
     header('Content-type: application/xhtml+xml; charset=utf-8');
     echo theme('yml_tools_xml', array(
       'products' => $products,
@@ -147,7 +172,10 @@ abstract class ymlStoreType {
     exit();
   }
 
-  static function checkSettings() {
+  /**
+   * Check module settings. Call exception if no settings.
+   */
+  static public function checkSettings() {
     $products = array();
     if (variable_get('yml_tools_vid', '') == '') {
       die('Please select primary vocabulary on YML export settings page!');
@@ -170,36 +198,75 @@ abstract class ymlStoreType {
 /**
  * Ubercart Store Class
  */
-class ymlUbercartStore extends ymlStoreType implements ymlStoreTypeInterface {
-  public function ymlUbercartStore() {
+class YmlUbercartStore extends YmlStoreType implements YmlStoreTypeInterface {
+  /**
+   * Implements class constructor.
+   */
+  public function __construct() {
     $this->type = YML_STORE_TYPE_UBERCART;
   }
 
+  /**
+   * Get store curency.
+   */
   public function getCurrency() {
     return variable_get('uc_currency_code', 'USD');
   }
 
+  /**
+   * Get price for single product.
+   *
+   * @param object $product
+   *   Product node.
+   *
+   * @return float
+   *   Product price
+   */
   public function getProductPrice($product) {
-      return $node->sell_price;
+    return $node->sell_price;
   }
 
+  /**
+   * Get SKU for single product.
+   *
+   * @param object $product
+   *   Product node
+   *
+   * @return string
+   *   Product SKU
+   */
   public function getProductSKU($product) {
-      return check_plain($product->model);
+    return check_plain($product->model);
   }
 }
 
 /**
  * Drupal Commerce Store Class
  */
-class ymlCommerceStore extends ymlStoreType implements ymlStoreTypeInterface  {
-  public function ymlCommerceStore() {
+class YmlCommerceStore extends ymlStoreType implements YmlStoreTypeInterface  {
+  /**
+   * Implements class constructor.
+   */
+  public function __construct() {
     $this->type = YML_STORE_TYPE_COMMERCE;
   }
 
+  /**
+   * Get store curency.
+   */
   public function getCurrency() {
     return commerce_default_currency();
   }
 
+  /**
+   * Get price for single product.
+   *
+   * @param object $product
+   *   Product node.
+   *
+   * @return float
+   *   Product price
+   */
   public function getProductPrice($product) {
     $product = commerce_product_load($product->nid);
     $price = commerce_product_calculate_sell_price($product);
@@ -207,20 +274,37 @@ class ymlCommerceStore extends ymlStoreType implements ymlStoreTypeInterface  {
     return $price;
   }
 
+  /**
+   * Get SKU for single product.
+   *
+   * @param object $product
+   *   Product node
+   *
+   * @return string
+   *   Product SKU
+   */
   public function getProductSKU($product) {
     $product_wrapper = entity_metadata_wrapper('node', $product);
     return $product_wrapper->field_product->get(0)->sku->value();
   }
 }
 
-class ymlStore {
-  static function createStore() {
+class YmlStore {
+  /**
+   * Factory method for create store.
+   *
+   * @return YmlUbercartStore|YmlCommerceStore|NULL
+   *   Return store class
+   */
+  static public function createStore() {
     if (module_exists('uc_store')) {
-      return new ymlUbercartStore();
+      return new YmlUbercartStore();
     }
     elseif (module_exists('commerce')) {
-      return new ymlCommerceStore();
+      return new YmlCommerceStore();
     }
-    else return null;
+    else {
+      return NULL;
+    }
   }
 }

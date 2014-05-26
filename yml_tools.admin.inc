@@ -12,7 +12,8 @@ function yml_tools_admin_settings() {
   $form = array();
   $currency_config_url = '';
 
-  $store = ymlStore::createStore();
+  $stroreCreator = new YmlStore();
+  $store = $stroreCreator->createStore();
 
   $store_type = $store->getType();
   switch ($store_type) {

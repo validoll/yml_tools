@@ -6,9 +6,15 @@
  *   Vyacheslav Malchik <validoll@drupal.org>
  */
 
+include_once 'yml_tools.class.inc';
+
+define('YML_STORE_TYPE_UBERCART', 'Ubercart');
+define('YML_STORE_TYPE_COMMERCE', 'Commerce');
+define('YML_TOOLS_XML_URL', 'products_to_yml.xml');
+
 function yml_tools_menu() {
   $items = array();
-  $items['products_to_yml.xml'] = array(
+  $items[YML_TOOLS_XML_URL] = array(
     'title' => t('Export products to YML'),
     'page callback' => 'yml_tools_get_xml',
     'type' => MENU_CALLBACK,
@@ -20,95 +26,38 @@ function yml_tools_menu() {
     'page arguments' => array('yml_tools_admin_settings'),
     'access callback' => 'user_access',
     'access arguments' => array('administer site configuration'),
+    'file' => 'yml_tools.admin.inc',
   );
   return $items;
 }
 
 function yml_tools_get_xml() {
-  if (variable_get('yml_tools_vid', '') == '') {
-    die('Please select primary vocabulary on YML export settings page!');
-  }
-
-  $ctypes = variable_get('yml_tools_types', array('product' => 'product'));
-  $enabled_ctypes = array();
-  foreach ($ctypes as $type_name => $enabled) {
-    if ($enabled) {
-      $enabled_ctypes[$type_name] = $type_name;
-    }
-  }
-
-  if (empty($enabled_ctypes)) {
-    die('Please select at least one node type on YML export settings page!');
-  }
-
-  $node_types = variable_get('yml_tools_types', array('product' => 'product'));
-  $nids = db_query("SELECT nid FROM {node} WHERE type IN (:node_types) AND status=:status", array(':node_types' => $node_types, ':status' => 1))->fetchCol();
-
-
-  $nodes = node_load_multiple($nids);
-
-  foreach ($nodes as $key => $node) {
-    $price = (int)$node->sell_price;
-    if (empty($price)) {
-      unset($nodes[$key]);
-    }
-  }
-
-  /*
-  $context = array(
-    'revision' => 'altered',
-    'type' => 'product',
-    'class' => array('product'),
-  );
-
-  $nodes = array();
-  while ($nid = db_fetch_object($r)) {
-    $product = node_load($nid -> nid);
-
-    if (function_exists('uc_price')) {
-      $context['subject']['node'] = $product;
-      $context['subject']['field'] = 'list_price';
-      $product -> list_price = uc_price($product -> list_price, $context);
-
-      $context['subject']['field'] = 'sell_price';
-      $product -> sell_price = uc_price($product -> sell_price, $context);
-    }
-
-    $nodes[] = $product;
-  }*/
-
-  $categories = db_query("SELECT d.tid, d.name, h.* FROM {taxonomy_term_data} d LEFT JOIN {taxonomy_term_hierarchy} h USING(tid) WHERE d.vid=:vid", array(':vid' => variable_get('yml_tools_vid', '')))->fetchAllAssoc('tid');
-
-  header('Content-type: application/xhtml+xml; charset=utf-8');
-  echo theme('yml_products', array(
-    'nodes' => $nodes,
-    'categories' => $categories
-  ));
-  exit();
+  $store = ymlStore::createStore();
+  $store->getXML();
 }
 
 function yml_tools_theme() {
   return array(
-    'yml_products' => array(
-      'variables' => array('nodes' => NULL, 'categories' => NULL),
-      'template' => 'yml_products',
-    ));
-}
-
-// prepare all strings so they are valid for Yandex.Market format
-function yml_safe($str) {
-  $rep = array(
-    '"' => '&quot;',
-    '&' => '&amp;',
-    '>' => '&gt;',
-    '<' => '&lt;',
-    "'" => '&apos;'
-  );
-
-  return strtr($str, $rep);
-}
-
-// shortcut for usage in html templates
-function ys($str) {
-  return yml_safe($str);
+      'yml_tools_xml' => array(
+        'variables' => array(
+            'products' => NULL,
+            'categories' => NULL,
+            'currency' => 'RUR',
+            'name' => variable_get('site_name', 'Drupal'),
+            'company' => variable_get('site_name', 'Drupal'),
+            'url' => $GLOBALS['base_url'],
+            'date' => date('Y-m-d h:i'),
+        ),
+        'template' => 'yml_tools_xml',
+      ),
+      'yml_tools_product' => array(
+        'variables' => array('product' => NULL),
+        'template' => 'yml_tools_product',
+        'currency' => 'RUR',
+      ),
+      'yml_tools_category' => array(
+        'variables' => array('category' => NULL),
+        'template' => 'yml_tools_category',
+      )
+    );
 }

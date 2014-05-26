@@ -3,9 +3,25 @@
 function yml_tools_admin_settings() {
   $form = array();
 
-  $ctypes = uc_product_types();
-  $ctype_first = $ctypes[0]; // we use first ctype to get available fields for now..
-  $ctypes = array_combine($ctypes, $ctypes);
+  $store = ymlStore::createStore();
+
+  $store_type = $store->getType();
+  switch($store_type) {
+  	case YML_STORE_TYPE_UBERCART:
+      $ctypes = uc_product_types();
+      $ctype_first = $ctypes[0]; // we use first ctype to get available fields for now.
+      //$ctypes = array_combine($ctypes, $ctypes);
+
+  	  break;
+  	case YML_STORE_TYPE_COMMERCE:
+      $ctypes = commerce_product_types();
+      $ctypes = array_keys($ctypes);
+      $ctype_first = $ctypes[0]; // we use first ctype to get available fields for now.
+      $ctypes = array_combine($ctypes, $ctypes);
+  	  break;
+  	default:
+  	  break;
+  }
 
   $form['yml_tools_types'] = array(
     '#required' => TRUE,
@@ -50,7 +66,7 @@ function yml_tools_admin_settings() {
     '#empty_value' => '',
     '#options' => $term_fields,
     '#default_value' => variable_get('yml_tools_term_field', ''),
-    '#description' => t('Select product term field where primary product categories are stored'),
+    '#description' => t('Select product term field where primary product categories are stored.'),
     '#title' => t('Category field'),
   );
 
@@ -60,7 +76,7 @@ function yml_tools_admin_settings() {
     '#empty_value' => '',
     '#options' => $descr_fields,
     '#default_value' => variable_get('yml_tools_descr_field', ''),
-    '#description' => t('Select text field which will be used as product description'),
+    '#description' => t('Select text field which will be used as product description.'),
     '#title' => t('Description field'),
   );
 
@@ -69,13 +85,13 @@ function yml_tools_admin_settings() {
     '#options' => array('true' => t("true"), 'false' => t("false")),
     '#title' => t('Select if delivery is enabled'),
     '#default_value' => variable_get('yml_tools_delivery', 'true'),
-    '#description' => t('Yandex.Market has "delivery" field. Select if it is enabled'),
+    '#description' => t('Yandex.Market has "delivery" field. Select if it is enabled.'),
   );
 
   $form['yml_tools_currency'] = array(
     '#type' => 'item',
     '#title' => t('Ubercart currency'),
-    '#markup' => variable_get('uc_currency_code', 'USD') . ' (' . l(t("Change"), 'admin/store/settings/store/edit/format') . ')',
+    '#markup' => $store->getCurrency() . ' (' . l(t("Change"), 'admin/store/settings/store/edit/format') . ')',
     '#description' => t("Should be 'RUR' for Russia"),
   );
 
@@ -86,7 +102,7 @@ function yml_tools_admin_settings() {
     '#description' => t("This field will be used for images in export."),
   );
 
-  $url = url('yml_products.xml', array('absolute' => TRUE));
+  $url = url(YML_TOOLS_XML_URL, array('absolute' => TRUE));
   $form['generated_url'] = array(
     '#type' => 'item',
     '#title' => t("Generated file"),

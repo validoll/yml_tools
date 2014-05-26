@@ -1,4 +1,4 @@
-name = Let me YML
+name = YML tools
 description = Allow the export of products from the store to YML (Yandex.Market)
 dependencies[] = taxonomy
 core = 7.x

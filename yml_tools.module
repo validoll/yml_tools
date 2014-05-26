@@ -2,9 +2,7 @@
 
 /**
  * @file
- *   YML primary module file.
- * @author
- *   Vyacheslav Malchik <validoll@drupal.org>
+ * YML primary module file.
  */
 
 include_once 'yml_tools.class.inc';

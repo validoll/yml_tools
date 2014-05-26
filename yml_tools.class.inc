@@ -108,7 +108,7 @@ abstract class YmlStoreType {
     }
 
     foreach ($nodes as $id => $node) {
-      $validate_price = (int) $this->getProductPrice($node);
+      $validate_price = (float) $this->getProductPrice($node);
       if (empty($validate_price)) {
         continue;
       }
@@ -126,7 +126,7 @@ abstract class YmlStoreType {
       $title = check_plain($node->title);
       $url = url('node/' . $node->nid, array('absolute' => TRUE));
       $image = $this->getProductImage($node);
-      $price = $this->getProductPrice($node);
+      $price = round((float) $this->getProductPrice($node), 2);
       $model = $this->getProductSKU($node);
 
       $products[$id] = (object) array(

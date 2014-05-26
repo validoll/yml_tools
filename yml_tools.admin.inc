@@ -11,7 +11,8 @@
 function yml_tools_admin_settings() {
   $form = array();
   $currency_config_url = '';
-
+  $image_field_markup = '';
+  $image_field_value = '';
   $strore_creator = new YmlStore();
   $store = $strore_creator->createStore();
 
@@ -24,6 +25,9 @@ function yml_tools_admin_settings() {
       $ctypes = array_combine($ctypes, $ctypes);
 
       $currency_config_url = 'admin/store/settings/store/edit/format';
+      $image_field_markup = variable_get('uc_image_' . $ctype_first, 'uc_product_image') .
+        ' (' . l(t("Change"), 'admin/structure/types/manage/' . $ctype_first . '/edit') . ')';
+      $image_field_value = variable_get('uc_image_' . $ctype_first, 'uc_product_image');
       break;
 
     case YML_TOOLS_STORE_TYPE_COMMERCE:
@@ -34,6 +38,10 @@ function yml_tools_admin_settings() {
       $ctypes = array_combine($ctypes, $ctypes);
 
       $currency_config_url = 'admin/commerce/config/currency';
+      // TODO: fix multiple image fields for commerce
+      $image_field_markup = 'field_images' .
+        ' (' . l(t("Change"), 'admin/commerce/config/product-variation-types/' . $ctype_first . '/edit') . ')';
+      $image_field_value = 'field_images';
       break;
 
     default:
@@ -115,11 +123,16 @@ function yml_tools_admin_settings() {
     '#description' => t("Should be 'RUR' for Russia"),
   );
 
-  $form['yml_tools_image_field'] = array(
+  $form['image_field'] = array(
     '#type' => 'item',
-    '#title' => t('Ubercart image field'),
-    '#markup' => variable_get('uc_image_' . $ctype_first, 'uc_product_image') . ' (' . l(t("Change"), 'admin/structure/types/manage/' . $ctype_first . '/edit') . ')',
+    '#title' => t('Image field'),
+    '#markup' => $image_field_markup,
     '#description' => t("This field will be used for images in export."),
+  );
+
+  $form['yml_tools_image_field'] = array(
+    '#type' => 'value',
+    '#value' => $image_field_value,
   );
 
   $url = url(YML_TOOLS_XML_URL, array('absolute' => TRUE));
@@ -128,11 +141,6 @@ function yml_tools_admin_settings() {
     '#title' => t("Generated file"),
     '#markup' => $url . ' (' . l(t("View"), $url) . ')',
     '#description' => t("Use this url in Yandex.Market"),
-  );
-
-  $form['yml_tools_image_field'] = array(
-    '#type' => 'value',
-    '#value' => variable_get('uc_image_' . $ctype_first, 'uc_product_image'),
   );
 
   $form['#submit'][] = 'yml_tools_admin_settings_submit';

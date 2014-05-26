@@ -22,6 +22,17 @@ interface YmlStoreTypeInterface {
   public function getProductPrice($product);
 
   /**
+   * Get image for single product.
+   *
+   * @param object $product
+   *   Product node
+   *
+   * @return string
+   *   Product image url
+   */
+  public function getProductImage($product);
+
+  /**
    * Get SKU for single product.
    *
    * @param object $product
@@ -74,7 +85,6 @@ abstract class YmlStoreType {
   public function getProducts() {
     $term_field = variable_get('yml_tools_term_field', '');
     $descr_field = variable_get('yml_tools_descr_field', '');
-    $image_field = variable_get('yml_tools_image_field', '');
 
     $this->checkSettings();
 
@@ -113,12 +123,9 @@ abstract class YmlStoreType {
         $description = check_plain(strip_tags($description[0]['value']));
       }
 
-      $image = field_get_items('node', $node, $image_field);
-      if (isset($image[0])) {
-        $image = file_create_url($image[0]['uri']);
-      }
       $title = check_plain($node->title);
       $url = url('node/' . $node->nid, array('absolute' => TRUE));
+      $image = $this->getProductImage($node);
       $price = $this->getProductPrice($node);
       $model = $this->getProductSKU($node);
 
@@ -223,7 +230,26 @@ class YmlUbercartStore extends YmlStoreType implements YmlStoreTypeInterface {
    *   Product price
    */
   public function getProductPrice($product) {
-    return $node->sell_price;
+    return $product->sell_price;
+  }
+
+  /**
+   * Get image for single product.
+   *
+   * @param object $product
+   *   Product node
+   *
+   * @return string
+   *   Product image url
+   */
+  public function getProductImage($product) {
+    $image_field = variable_get('yml_tools_image_field', '');
+    $path = '';
+    $image = field_get_items('node', $product, $image_field);
+    if (isset($image[0])) {
+      $path = file_create_url($image[0]['uri']);
+    }
+    return $path;
   }
 
   /**
@@ -256,6 +282,26 @@ class YmlCommerceStore extends ymlStoreType implements YmlStoreTypeInterface  {
    */
   public function getCurrency() {
     return commerce_default_currency();
+  }
+
+  /**
+   * Get image for single product.
+   *
+   * @param object $product
+   *   Product node
+   *
+   * @return string
+   *   Product image url
+   */
+  public function getProductImage($product) {
+    $image_field = variable_get('yml_tools_image_field', '');
+    $path = '';
+    $product = commerce_product_load($product->nid);
+    $image = field_get_items('commerce_product', $product, $image_field);
+    if (isset($image[0])) {
+      $path = file_create_url($image[0]['uri']);
+    }
+    return $path;
   }
 
   /**

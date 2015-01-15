@@ -83,6 +83,7 @@ abstract class YmlStoreType {
    * Get store products.
    */
   public function getProducts() {
+    $products = array();
     $term_field = variable_get('yml_tools_term_field', '');
     $descr_field = variable_get('yml_tools_descr_field', '');
 

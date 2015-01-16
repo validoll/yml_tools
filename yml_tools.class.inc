@@ -215,6 +215,13 @@ class YmlUbercartStore extends YmlStoreType implements YmlStoreTypeInterface {
   }
 
   /**
+   * Get content types of product.
+   */
+  public function getContentTypes() {
+    return uc_product_types();
+  }
+
+  /**
    * Get store curency.
    */
   public function getCurrency() {
@@ -276,6 +283,13 @@ class YmlCommerceStore extends ymlStoreType implements YmlStoreTypeInterface  {
    */
   public function __construct() {
     $this->type = YML_TOOLS_STORE_TYPE_COMMERCE;
+  }
+
+  /**
+   * Get content types of product.
+   */
+  public function getContentTypes() {
+    return commerce_product_types();
   }
 
   /**

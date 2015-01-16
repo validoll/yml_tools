@@ -15,15 +15,25 @@ function yml_tools_admin_settings() {
   $image_field_value = '';
   $strore_creator = new YmlStore();
   $store = $strore_creator->createStore();
+  $instances = field_info_instances('node');
+  $term_fields = array();
+  $descr_fields = array();
+  $ctypes = $store->getContentTypes();
+  // We use first ctype to get available fields for now.
+  $i = 0;
+  $ctype_first = $ctypes[$i];
+
+  while(!isset($ctype_first)) {
+    $ctype_first = $ctypes[$i++];
+  }
+
+  $instance = $instances[$ctype_first];
+
+  $ctypes = array_combine($ctypes, $ctypes);
 
   $store_type = $store->getType();
   switch ($store_type) {
     case YML_TOOLS_STORE_TYPE_UBERCART:
-      $ctypes = uc_product_types();
-      // We use first ctype to get available fields for now.
-      $ctype_first = $ctypes[0];
-      $ctypes = array_combine($ctypes, $ctypes);
-
       $currency_config_url = 'admin/store/settings/store/edit/format';
       $image_field_markup = variable_get('uc_image_' . $ctype_first, 'uc_product_image') .
         ' (' . l(t("Change"), 'admin/structure/types/manage/' . $ctype_first . '/edit') . ')';
@@ -31,12 +41,6 @@ function yml_tools_admin_settings() {
       break;
 
     case YML_TOOLS_STORE_TYPE_COMMERCE:
-      $ctypes = commerce_product_types();
-      $ctypes = array_keys($ctypes);
-      // We use first ctype to get available fields for now.
-      $ctype_first = $ctypes[0];
-      $ctypes = array_combine($ctypes, $ctypes);
-
       $currency_config_url = 'admin/commerce/config/currency';
       // TODO: fix multiple image fields for commerce
       $image_field_markup = 'field_images' .
@@ -46,7 +50,6 @@ function yml_tools_admin_settings() {
 
     default:
       break;
-
   }
 
   $form['yml_tools_types'] = array(
@@ -56,12 +59,6 @@ function yml_tools_admin_settings() {
     '#default_value' => variable_get('yml_tools_types', array('product' => 'product')),
     '#title' => t('Select node types for export'),
   );
-  $instances = field_info_instances('node');
-
-  $instance = $instances[$ctype_first];
-
-  $term_fields = array();
-  $descr_fields = array();
 
   foreach ($instance as $field_name => $field) {
     $info = field_info_field($field_name);
@@ -152,8 +149,7 @@ function yml_tools_admin_settings() {
  * Processes ml_tools_admin_settings form.
  */
 function yml_tools_admin_settings_submit($form, $form_state) {
-  $term_field = $form_state['values']['yml_tools_term_field'];
-  $term_field  = field_info_field($term_field);
+  $term_field = field_info_field($form_state['values']['yml_tools_term_field']);
 
   $vocab = taxonomy_vocabulary_machine_name_load($term_field['settings']['allowed_values'][0]['vocabulary']);
   variable_set('yml_tools_vid', $vocab->vid);

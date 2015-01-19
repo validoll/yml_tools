@@ -114,7 +114,7 @@ function yml_tools_admin_settings() {
 
   $form['yml_tools_currency'] = array(
     '#type' => 'item',
-    '#title' => t('Ubercart currency'),
+    '#title' => t('Default currency of store '),
     '#markup' => $store->getCurrency() . ' (' . l(t("Change"), $currency_config_url) . ')',
     '#description' => t("Should be 'RUR' for Russia"),
   );

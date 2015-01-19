@@ -218,7 +218,9 @@ class YmlUbercartStore extends YmlStoreType implements YmlStoreTypeInterface {
    * Get content types of product.
    */
   public function getContentTypes() {
-    return uc_product_types();
+    $ctypes = uc_product_types();
+    $ctypes = array_combine($ctypes, $ctypes);
+    return array_keys($ctypes);
   }
 
   /**
@@ -289,7 +291,10 @@ class YmlCommerceStore extends ymlStoreType implements YmlStoreTypeInterface  {
    * Get content types of product.
    */
   public function getContentTypes() {
-    return commerce_product_types();
+    $ctypes = commerce_product_types();
+    $ctypes = array_keys($ctypes);
+    $ctypes = array_combine($ctypes, $ctypes);
+    return $ctypes;
   }
 
   /**

@@ -19,17 +19,16 @@ function yml_tools_admin_settings() {
   $term_fields = array();
   $descr_fields = array();
   $ctypes = $store->getContentTypes();
-  // We use first ctype to get available fields for now.
-  $i = 0;
-  $ctype_first = $ctypes[$i];
 
-  while(!isset($ctype_first)) {
-    $ctype_first = $ctypes[$i++];
+  // We use first ctype to get available fields for now.
+  $ctypes_tmp = $ctypes;
+  $ctype_first = array_pop($ctypes_tmp);
+
+  while(!empty($ctypes_tmp) && empty($ctype_first)) {
+    $ctype_first = array_pop($ctypes_tmp);
   }
 
   $instance = $instances[$ctype_first];
-
-  $ctypes = array_combine($ctypes, $ctypes);
 
   $store_type = $store->getType();
   switch ($store_type) {
